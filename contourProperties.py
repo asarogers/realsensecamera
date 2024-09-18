@@ -4,7 +4,7 @@ import CameraObject
 import numpy as np
 
 max_value = 255
-max_value_H = 360 // 2
+max_value_H = 360//2
 
 low_H = 111
 high_H = 159
@@ -109,7 +109,7 @@ cv.createTrackbar(v_name, window_capture_name, v, max_value, on_V_thresh_trackba
 
 camera = CameraObject.RealSense2()
 camera.setupCamera()
-camera.setRemoveBackgroundThreshold(0.4)
+camera.setRemoveBackgroundThreshold(1)
 align = camera.getAlign()
 
 while True:
@@ -134,7 +134,7 @@ while True:
     frame_threshold = cv.inRange(hsvImage, (low_H, low_S, low_V), (high_H, high_S, high_V))
     
     ret, thresh = cv.threshold(frame_threshold, h, s, v)
-    
+    center = []
     contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
     if contours:
         cnt = contours[0]
@@ -144,22 +144,29 @@ while True:
             cx = int(m["m10"] / m["m00"])
             cy = int(m["m01"] / m["m00"])
             area = cv.contourArea(cnt)
-            # print(cx, cy, area)
+            print(cx, cy, area)
             epsilon = 0.1*cv.arcLength(cnt,True)
             approx = cv.approxPolyDP(cnt,epsilon,True)
             box = cv.minAreaRect(approx)
             end = approx[1][0]
             start = approx[0][0]
+            if area > 300:
+                center = [cx, cy]
 
-            print("\n")
-            print(box)
-            print(f"old  = {approx}")
-            print(f"new  = {approx[0][0]}")
-            print(f"center  = {(end[0] + start[0])}, {(end[1] + start[1])/2}")
-            
-    
+            # print("\n")
+            # print(box)
+            # print(f"old  = {approx}")
+            # print(f"new  = {approx[0][0]}")
+            # print(f"center  = {(end[0] + start[0])}, {(end[1] + start[1])/2}")
     cv.drawContours(bgRemoved, contours, -1, (0, 255, 0), 3)
-    cv.imshow(window_capture_name, bgRemoved)
+
+    if center:
+        newImage = cv.circle(bgRemoved, (center[0], center[1]), 2, color=(0, 0, 255), thickness=-1)
+        cv.imshow(window_capture_name, newImage)
+    else:
+        cv.imshow(window_capture_name, bgRemoved)
+    
+    
     cv.imshow(window_detection_name, frame_threshold)
     
     key = cv.waitKey(30)
