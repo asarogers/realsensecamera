@@ -145,11 +145,11 @@ while True:
             cy = int(m["m01"] / m["m00"])
             area = cv.contourArea(cnt)
             print(cx, cy, area)
-            epsilon = 0.1*cv.arcLength(cnt,True)
-            approx = cv.approxPolyDP(cnt,epsilon,True)
-            box = cv.minAreaRect(approx)
-            end = approx[1][0]
-            start = approx[0][0]
+            # epsilon = 0.1*cv.arcLength(cnt,True)
+            # approx = cv.approxPolyDP(cnt,epsilon,True)
+            # box = cv.minAreaRect(approx)
+            # end = approx[1][0]
+            # start = approx[0][0]
             if area > 300:
                 center = [cx, cy]
 
