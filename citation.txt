@@ -1,0 +1,5 @@
+[1] https://www.rapidtables.com/web/color/RGB_Color.html Accessed on 09/17/2024
+[2] https://www.geeksforgeeks.org/filter-color-with-opencv/ Accessed on 09/17/2024
+[3] https://www.youtube.com/watch?v=fM6ff3VEviI
+[4] https://chatgpt.com/share/66ea6698-0df0-8009-934c-cfe7f77c9e58
+[5] Ben Benyamin
