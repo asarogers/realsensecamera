@@ -1,57 +1,79 @@
-import cv2 as cv
+import pyrealsense2 as rs
 import numpy as np
+import cv2 as cv
 import CameraObject
 
-camera = CameraObject.RealSense2()
-camera.setupCamera()
-camera.setRemoveBackgroundThreshold(1)
-align = camera.getAlign()
 
 title_window = "Filter Image"
 
-cv.namedWindow(title_window, cv.WINDOW_NORMAL)
+def doNothing(nothing):
+    pass
 
+def main():
+    camera = CameraObject.RealSense2()
+    camera.setupCamera()
+    camera.setRemoveBackgroundThreshold(1.2)
+    align = camera.getAlign()
 
+    cv.namedWindow(title_window, cv.WINDOW_NORMAL)
 
-try:
-    while True:
-        frames = camera.pipeline.wait_for_frames()
-        alignedFrames = align.process(frames)
+    cv.createTrackbar("H-Max", title_window, 151, 179, lambda x : None)
+    cv.createTrackbar("S-Max", title_window, 255, 255, lambda x : None)  
+    cv.createTrackbar("V-Max", title_window, 255, 255, lambda x : None)  
 
-        alignedDepthFrame = camera.getDepthFrame(alignedFrames)
-        colorFrame = camera.getColorFrame(alignedFrames)
+    cv.createTrackbar("H-Min", title_window, 123, 179, lambda x : None) 
+    cv.createTrackbar("S-Min", title_window, 73, 255, lambda x : None)  
+    cv.createTrackbar("V-Min", title_window, 0, 255, lambda x : None)  
 
-        if not alignedDepthFrame or not colorFrame:
-            continue
+    try:
+        while True:
+            frames = camera.pipeline.wait_for_frames()
+            alignedFrames = align.process(frames)
 
-        depthImage = camera.getDataFromFrame(alignedDepthFrame)
-        colorImage = camera.getDataFromFrame(colorFrame)
-        
-        depthImage3D = np.dstack((depthImage, depthImage, depthImage))  
-        bgRemoved = camera.removeObject(depthImage3D, colorImage)
+            alignedDepthFrame = camera.getDepthFrame(alignedFrames)
+            colorFrame = camera.getColorFrame(alignedFrames)
 
-        # convert the color image to HSV
-        hsvImage = cv.cvtColor(bgRemoved, cv.COLOR_BGR2HSV)
+            if not alignedDepthFrame or not colorFrame:
+                continue
 
-        # define range of blue color in HSV
-        lower_blue = np.array([110,50,50])
-        upper_blue = np.array([130,255,255])
-        # Threshold the HSV image to get only blue colors
-        mask = cv.inRange(hsvImage, lower_blue, upper_blue)
-        # Bitwise-AND mask and original image
-        res = cv.bitwise_and(bgRemoved,bgRemoved, mask= mask)
-        
-        cv.imshow('frame',bgRemoved)
-        cv.imshow('mask',mask)
-        cv.imshow('res',res)
-        k = cv.waitKey(5) & 0xFF
-        if k == 27:
-            break
+            depthImage = camera.getDataFromFrame(alignedDepthFrame)
+            colorImage = camera.getDataFromFrame(colorFrame)
+            
+            depthImage3D = np.dstack((depthImage, depthImage, depthImage))  
+            bgRemoved = camera.removeObject(depthImage3D, colorImage)
 
+            # convert the color image to HSV
+            hsvImage = cv.cvtColor(colorImage, cv.COLOR_BGR2HSV)
 
-except Exception as e:
-    print(f"An error occurred: {e}")
+            # get current positions of the HSV trackbars
+            maxH = cv.getTrackbarPos("H-Max", title_window)
+            maxS = cv.getTrackbarPos("S-Max", title_window)
+            maxV = cv.getTrackbarPos("V-Max", title_window)
 
-finally:
-    camera.pipeline.stop()
-    cv.destroyAllWindows()
+            minH = cv.getTrackbarPos("H-Min", title_window)
+            minS = cv.getTrackbarPos("S-Min", title_window)
+            minV = cv.getTrackbarPos("V-Min", title_window)
+
+            # create a mask based on the HSV trackbar values
+            lowerHSV = np.array([minH, minS, minV])
+            upperHSV = np.array([maxH, maxS, maxV])  
+
+            mask = cv.inRange(hsvImage, lowerHSV, upperHSV)
+            filteredImage = cv.bitwise_and(colorImage, colorImage, mask=mask)
+
+            # display the filtered image
+            cv.imshow(title_window, filteredImage)
+
+            key = cv.waitKey(1)
+            if key & 0xFF == ord('q') or key == 27:
+                break
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    finally:
+        camera.pipeline.stop()
+        cv.destroyAllWindows()
+
+if __name__ == "__main__":
+    main()

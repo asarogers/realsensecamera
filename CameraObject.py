@@ -53,6 +53,6 @@ class RealSense2:
         return np.asanyarray(frame.get_data())
     
     def removeObject(self, depth_image_3d, color_image):
-        grey_color = 153
+        grey_color = 0
         bg_removed = np.where((depth_image_3d > self.removeBackgroundThreshold) | (depth_image_3d <= -1), grey_color, color_image)
         return bg_removed

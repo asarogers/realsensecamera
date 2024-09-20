@@ -12,18 +12,18 @@ def doNothing(nothing):
 def main():
     camera = CameraObject.RealSense2()
     camera.setupCamera()
-    camera.setRemoveBackgroundThreshold(1)
+    camera.setRemoveBackgroundThreshold(1.2)
     align = camera.getAlign()
 
     cv.namedWindow(title_window, cv.WINDOW_NORMAL)
 
-    cv.createTrackbar("H-Max", title_window, 136, 179, lambda x : None)
-    cv.createTrackbar("S-Max", title_window, 194, 255, lambda x : None)  
-    cv.createTrackbar("V-Max", title_window, 255, 255, lambda x : None)  
+    cv.createTrackbar("H-Max", title_window, 138, 179, lambda x : None)
+    cv.createTrackbar("S-Max", title_window, 167, 255, lambda x : None)  
+    cv.createTrackbar("V-Max", title_window, 188, 255, lambda x : None)  
 
-    cv.createTrackbar("H-Min", title_window, 115, 179, lambda x : None) 
-    cv.createTrackbar("S-Min", title_window, 55, 255, lambda x : None)  
-    cv.createTrackbar("V-Min", title_window, 124, 255, lambda x : None)  
+    cv.createTrackbar("H-Min", title_window, 123, 179, lambda x : None) 
+    cv.createTrackbar("S-Min", title_window, 61, 255, lambda x : None)  
+    cv.createTrackbar("V-Min", title_window, 34, 255, lambda x : None)  
 
     try:
         while True:
@@ -43,7 +43,7 @@ def main():
             bgRemoved = camera.removeObject(depthImage3D, colorImage)
 
             # convert the color image to HSV
-            hsvImage = cv.cvtColor(bgRemoved, cv.COLOR_BGR2HSV)
+            hsvImage = cv.cvtColor(colorImage, cv.COLOR_BGR2HSV)
 
             # get current positions of the HSV trackbars
             maxH = cv.getTrackbarPos("H-Max", title_window)
